@@ -58,24 +58,34 @@
 		alert(e.message);
 	}
 
+    const abortController = new AbortController();
+    abortController.signal.onabort = event => {
+            // All NFC operations have been aborted.
+    };
+
     scanButton.addEventListener("click", async () => {
         console.log("User clicked scan button");
 
         try {
+
+
             const ndef = new NDEFReader();
-            await ndef.scan();
+            await ndef.scan({ signal: abortController.signal });
             alert("> Scan started");
 
             ndef.addEventListener("readingerror", () => {
             alert("Argh! Cannot read data from the NFC tag. Try another one?");
+            abortController.abort();
             });
 
             ndef.addEventListener("reading", ({ message, serialNumber }) => {
             alert(`> Serial Number: ${serialNumber}`);
             alert(`> Records: (${message.records.length})`);
+            abortController.abort();
             });
         } catch (error) {
             alert("Argh! " + error);
+            abortController.abort();
         }
     });
 
