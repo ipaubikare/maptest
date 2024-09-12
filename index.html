@@ -34,7 +34,7 @@
 <body>
 
 <div id='map'></div>
-<div id="nfc"> fdfgdf</div>
+<div id="nfc"> <button id="scanButton">Scan</button></div>
 
 <script>
 	const map = L.map('map').fitWorld();
@@ -50,13 +50,34 @@
 	function onLocationFound(e) {
 	   const radius = e.accuracy / 2;
        locationMarker.setLatLng(e.latlng);
-       alert(e.latlng);
+       //alert(e.latlng);
 
 	}
 
 	function onLocationError(e) {
 		alert(e.message);
 	}
+
+    scanButton.addEventListener("click", async () => {
+        console.log("User clicked scan button");
+
+        try {
+            const ndef = new NDEFReader();
+            await ndef.scan();
+            alert("> Scan started");
+
+            ndef.addEventListener("readingerror", () => {
+            alert("Argh! Cannot read data from the NFC tag. Try another one?");
+            });
+
+            ndef.addEventListener("reading", ({ message, serialNumber }) => {
+            alert(`> Serial Number: ${serialNumber}`);
+            alert(`> Records: (${message.records.length})`);
+            });
+        } catch (error) {
+            alert("Argh! " + error);
+        }
+    });
 
 	map.on('locationfound', onLocationFound);
 	map.on('locationerror', onLocationError);
